@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+@theme {
+  /* Charte graphique EPUICI (couleurs du logo) */
+  --color-epuici-blue: #0b5ca8;
+  --color-epuici-blue-light: #2b7bc4;
+  --color-epuici-accent: #2f7d32;
+  --color-epuici-secondary: #a9d1f2;
+
+  --font-display: 'Baloo 2', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #f5f8fb;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+}
