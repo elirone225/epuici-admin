@@ -15,6 +15,7 @@ import Abonnement from './pages/villageadmin/Abonnement';
 import Actualites from './pages/villageadmin/Actualites';
 import Alertes from './pages/villageadmin/Alertes';
 import DemandesPriere from './pages/villageadmin/DemandesPriere';
+import LiveVod from './pages/villageadmin/LiveVod';
 import Groupes from './pages/villageadmin/Groupes';
 import Abonnes from './pages/villageadmin/Abonnes';
 
@@ -67,6 +68,14 @@ function App() {
             element={
               <RouteProtegee roleRequis="villageadmin">
                 <DemandesPriere />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/eglise/live-vod"
+            element={
+              <RouteProtegee roleRequis="villageadmin">
+                <LiveVod />
               </RouteProtegee>
             }
           />
