@@ -15,7 +15,7 @@ export default function MiseEnPageVillageAdmin({ children }) {
   const liensMenu = [
     { chemin: '/eglise/tableau-de-bord', label: 'Tableau de bord', icone: LayoutDashboard },
     { chemin: '/eglise/actualites', label: 'Actualités', icone: Newspaper },
-    { chemin: '/eglise/live-vod', label: 'Live & VOD', icone: Radio },
+    { chemin: '/eglise/live-vod', label: 'Direct', icone: Radio },
     { chemin: '/eglise/alertes', label: 'Alertes', icone: Megaphone },
     { chemin: '/eglise/prieres', label: 'Demandes de prière', icone: HandHeart },
     { chemin: '/eglise/groupes', label: 'Groupes', icone: MessagesSquare },

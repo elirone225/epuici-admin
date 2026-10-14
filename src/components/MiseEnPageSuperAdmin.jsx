@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Building2, CreditCard, Users, LogOut, KeyRound, Video, GalleryHorizontal } from 'lucide-react';
+import { LayoutDashboard, Building2, CreditCard, Users, LogOut, KeyRound, Video, GalleryHorizontal, Clapperboard } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ModalChangerMotDePasse from './ModalChangerMotDePasse';
 
@@ -29,6 +29,11 @@ export default function MiseEnPageSuperAdmin({ children }) {
       chemin: '/superadmin/utilisateurs',
       label: 'Utilisateurs',
       icone: Users,
+    },
+    {
+      chemin: '/superadmin/videos-vod',
+      label: 'Vidéos (VOD)',
+      icone: Clapperboard,
     },
     {
       chemin: '/superadmin/pub-reportage',

@@ -10,6 +10,7 @@ import GestionAbonnements from './pages/superadmin/GestionAbonnements';
 import GestionUtilisateurs from './pages/superadmin/GestionUtilisateurs';
 import GestionPubReportage from './pages/superadmin/GestionPubReportage';
 import GestionBannieresPub from './pages/superadmin/GestionBannieresPub';
+import GestionVideosVod from './pages/superadmin/GestionVideosVod';
 import TableauDeBordVillageAdmin from './pages/villageadmin/TableauDeBordVillageAdmin';
 import Abonnement from './pages/villageadmin/Abonnement';
 import Actualites from './pages/villageadmin/Actualites';
@@ -142,6 +143,14 @@ function App() {
             element={
               <RouteProtegee roleRequis="superadmin">
                 <GestionBannieresPub />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/superadmin/videos-vod"
+            element={
+              <RouteProtegee roleRequis="superadmin">
+                <GestionVideosVod />
               </RouteProtegee>
             }
           />
