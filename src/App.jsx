@@ -8,7 +8,6 @@ import TableauDeBordSuperAdmin from './pages/superadmin/TableauDeBordSuperAdmin'
 import GestionVillageAdmins from './pages/superadmin/GestionVillageAdmins';
 import GestionAbonnements from './pages/superadmin/GestionAbonnements';
 import GestionUtilisateurs from './pages/superadmin/GestionUtilisateurs';
-import GestionPubReportage from './pages/superadmin/GestionPubReportage';
 import GestionBannieresPub from './pages/superadmin/GestionBannieresPub';
 import GestionVideosVod from './pages/superadmin/GestionVideosVod';
 import TableauDeBordVillageAdmin from './pages/villageadmin/TableauDeBordVillageAdmin';
@@ -127,14 +126,6 @@ function App() {
             element={
               <RouteProtegee roleRequis="superadmin">
                 <GestionUtilisateurs />
-              </RouteProtegee>
-            }
-          />
-          <Route
-            path="/superadmin/pub-reportage"
-            element={
-              <RouteProtegee roleRequis="superadmin">
-                <GestionPubReportage />
               </RouteProtegee>
             }
           />

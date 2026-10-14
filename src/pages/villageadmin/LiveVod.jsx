@@ -47,7 +47,7 @@ export default function LiveVod() {
   return (
     <MiseEnPageVillageAdmin>
       <div className="p-8 max-w-2xl">
-        <h1 className="font-display text-2xl font-bold text-gray-800">Direct</h1>
+        <h1 className="font-display text-2xl font-bold text-gray-800">Lien du direct</h1>
         <p className="text-gray-500 text-sm mt-1 mb-6">
           Donnez le lien de votre direct (culte, évènement...) pour que les fidèles absents de votre
           église puissent le suivre dans l'onglet « Live & VOD » de l'application.
