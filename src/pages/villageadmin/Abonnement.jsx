@@ -5,10 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
 
 const FORMULES = [
-  { id: '1mois', label: '1 mois', prix: 25000 },
-  { id: '3mois', label: '3 mois', prix: 70000 },
-  { id: '6mois', label: '6 mois', prix: 130000 },
-  { id: '12mois', label: '12 mois', prix: 250000, populaire: true },
+  { id: '1mois', label: '1 mois', prix: 15000 },
+  { id: '3mois', label: '3 mois', prix: 45000 },
+  { id: '6mois', label: '6 mois', prix: 80000 },
+  { id: '12mois', label: '12 mois', prix: 150000, populaire: true },
 ];
 
 export default function Abonnement() {
