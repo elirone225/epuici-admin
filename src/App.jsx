@@ -14,6 +14,7 @@ import TableauDeBordVillageAdmin from './pages/villageadmin/TableauDeBordVillage
 import Abonnement from './pages/villageadmin/Abonnement';
 import Actualites from './pages/villageadmin/Actualites';
 import Alertes from './pages/villageadmin/Alertes';
+import DemandesPriere from './pages/villageadmin/DemandesPriere';
 import Groupes from './pages/villageadmin/Groupes';
 import Abonnes from './pages/villageadmin/Abonnes';
 
@@ -58,6 +59,14 @@ function App() {
             element={
               <RouteProtegee roleRequis="villageadmin">
                 <Alertes />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/eglise/prieres"
+            element={
+              <RouteProtegee roleRequis="villageadmin">
+                <DemandesPriere />
               </RouteProtegee>
             }
           />
