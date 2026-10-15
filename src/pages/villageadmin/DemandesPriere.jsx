@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, RotateCcw, Trash2 } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Trash2, Globe, Lock, EyeOff, Sparkles } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
 
@@ -27,6 +27,17 @@ export default function DemandesPriere() {
       setDemandes((precedent) => precedent.map((d) => (d._id === id ? data : d)));
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur lors de la mise à jour.');
+    }
+  };
+
+  // Modération : la demande disparaît du mur de prière des fidèles
+  const retirerDuMur = async (id) => {
+    if (!confirm('Retirer cette demande du mur de prière ? Elle restera visible ici.')) return;
+    try {
+      const { data } = await axiosClient.put(`/demandes-priere/${id}/retirer-du-mur`);
+      setDemandes((precedent) => precedent.map((d) => (d._id === id ? data : d)));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Erreur lors de la modération.');
     }
   };
 
@@ -83,11 +94,33 @@ export default function DemandesPriere() {
                   >
                     {demande.statut === 'traitee' ? 'Priée' : 'Nouvelle'}
                   </span>
+                  {demande.visibilite === 'publique' ? (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-50 text-epuici-blue flex items-center gap-1">
+                      <Globe size={12} /> Mur de prière{demande.anonyme ? ' (anonyme)' : ''}
+                    </span>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-500 flex items-center gap-1">
+                      <Lock size={12} /> Privée
+                    </span>
+                  )}
+                  {demande.nbPriants > 0 && (
+                    <span className="text-xs text-gray-500">🙏 {demande.nbPriants}</span>
+                  )}
                   <span className="text-xs text-gray-400">
                     {new Date(demande.createdAt).toLocaleString('fr-FR')}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 whitespace-pre-wrap">{demande.texte}</p>
+                {demande.exaucee && (
+                  <div className="mt-2 bg-green-50 border border-green-100 rounded-lg p-2">
+                    <p className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                      <Sparkles size={13} /> Prière exaucée
+                    </p>
+                    {demande.temoignage && (
+                      <p className="text-sm text-gray-700 whitespace-pre-wrap mt-1">{demande.temoignage}</p>
+                    )}
+                  </div>
+                )}
                 <p className="text-xs text-gray-400 mt-2">
                   Envoyée par {demande.utilisateur?.nom || 'Fidèle'}
                   {demande.utilisateur?.telephone ? ` — ${demande.utilisateur.telephone}` : ''}
@@ -113,6 +146,15 @@ export default function DemandesPriere() {
                     </>
                   )}
                 </button>
+
+                {demande.visibilite === 'publique' && (
+                  <button
+                    onClick={() => retirerDuMur(demande._id)}
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg h-fit text-gray-500 hover:bg-gray-100"
+                  >
+                    <EyeOff size={14} /> Retirer du mur
+                  </button>
+                )}
 
                 <button
                   onClick={() => supprimerDemande(demande._id)}
