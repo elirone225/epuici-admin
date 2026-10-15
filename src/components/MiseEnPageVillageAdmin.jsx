@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, MessagesSquare, CreditCard, Users, LogOut, KeyRound, Megaphone, HandHeart, Radio, Wallet, Settings } from 'lucide-react';
+import { LayoutDashboard, Newspaper, MessagesSquare, CreditCard, Users, LogOut, KeyRound, Megaphone, HandHeart, Radio, Wallet, Settings, CalendarDays } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ModalChangerMotDePasse from './ModalChangerMotDePasse';
 
@@ -17,6 +17,7 @@ export default function MiseEnPageVillageAdmin({ children }) {
   const liensMenu = [
     { chemin: '/eglise/tableau-de-bord', label: 'Tableau de bord', icone: LayoutDashboard },
     { chemin: '/eglise/actualites', label: 'Actualités', icone: Newspaper },
+    { chemin: '/eglise/evenements', label: 'Événements', icone: CalendarDays },
     { chemin: '/eglise/live-vod', label: 'Lien du direct', icone: Radio },
     { chemin: '/eglise/alertes', label: 'Alertes', icone: Megaphone },
     { chemin: '/eglise/prieres', label: 'Demandes de prière', icone: HandHeart },

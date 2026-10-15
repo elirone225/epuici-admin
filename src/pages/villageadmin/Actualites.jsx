@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Image as ImageIcon, Trash2, Eye, Heart, Send, Undo2 } from 'lucide-react';
+import { Plus, X, Image as ImageIcon, Trash2, Eye, Heart, Send, Undo2, MessageCircle } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../context/AuthContext';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
 
+// Catégories filtrables dans l'app (les anciennes publications sont
+// classées dans "Annonces")
 const CATEGORIES = [
-  { valeur: 'actualites', label: 'Actualités' },
-  { valeur: 'communique_officiel', label: 'Communiqué officiel' },
-  { valeur: 'alerte_urgente', label: 'Alerte urgente' },
-  { valeur: 'avis_deces', label: 'Avis de décès' },
-  { valeur: 'naissance', label: 'Naissance' },
-  { valeur: 'mariage', label: 'Mariage' },
-  { valeur: 'reussite', label: 'Réussite' },
-  { valeur: 'commerce', label: 'Commerce' },
+  { valeur: 'annonce', label: 'Annonce' },
+  { valeur: 'enseignement', label: 'Enseignement' },
+  { valeur: 'temoignage', label: 'Témoignage' },
 ];
+const libelleCategorie = (valeur) =>
+  CATEGORIES.find((c) => c.valeur === valeur)?.label || 'Annonce';
 
 export default function Actualites() {
   const { user } = useAuth();
   const [articles, setArticles] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [modalOuvert, setModalOuvert] = useState(false);
+  const [articleCommentaires, setArticleCommentaires] = useState(null);
 
   const abonnementActif =
     user?.abonnementExpireLe && new Date(user.abonnementExpireLe) > new Date();
@@ -118,6 +118,9 @@ export default function Actualites() {
                   >
                     {article.statut === 'publie' ? 'Publié' : 'Brouillon'}
                   </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-epuici-secondary/30 text-epuici-blue">
+                    {libelleCategorie(article.categorie)}
+                  </span>
                 </div>
                 <h3 className="font-semibold text-gray-800 mb-1 line-clamp-1">{article.titre}</h3>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{article.contenu}</p>
@@ -129,6 +132,13 @@ export default function Actualites() {
                     <span className="flex items-center gap-1">
                       <Heart size={14} /> {article.likes}
                     </span>
+                    <button
+                      onClick={() => setArticleCommentaires(article)}
+                      title="Voir et modérer les commentaires"
+                      className="flex items-center gap-1 hover:text-epuici-blue"
+                    >
+                      <MessageCircle size={14} /> {article.nombreCommentaires || 0}
+                    </button>
                   </div>
                   <div className="flex items-center gap-3">
                     <button
@@ -159,6 +169,16 @@ export default function Actualites() {
         </div>
       </div>
 
+      {articleCommentaires && (
+        <ModalCommentaires
+          article={articleCommentaires}
+          onFermer={() => {
+            setArticleCommentaires(null);
+            charger();
+          }}
+        />
+      )}
+
       {modalOuvert && (
         <ModalNouvelArticle
           onFermer={() => setModalOuvert(false)}
@@ -175,7 +195,7 @@ export default function Actualites() {
 function ModalNouvelArticle({ onFermer, onSucces }) {
   const [titre, setTitre] = useState('');
   const [contenu, setContenu] = useState('');
-  const [categorie, setCategorie] = useState('actualites');
+  const [categorie, setCategorie] = useState('annonce');
   const [statut, setStatut] = useState('publie');
   const [photos, setPhotos] = useState([]);
   const [erreur, setErreur] = useState('');
@@ -296,6 +316,72 @@ function ModalNouvelArticle({ onFermer, onSucces }) {
           >
             {envoi ? 'Publication...' : 'Publier'}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Commentaires des fidèles sous une publication, avec suppression (modération)
+function ModalCommentaires({ article, onFermer }) {
+  const [commentaires, setCommentaires] = useState(null);
+  const [erreur, setErreur] = useState('');
+
+  useEffect(() => {
+    axiosClient
+      .get(`/articles/${article._id}/commentaires`)
+      .then(({ data }) => setCommentaires(data))
+      .catch(() => setErreur('Impossible de charger les commentaires.'));
+  }, [article._id]);
+
+  const supprimer = async (id) => {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    try {
+      await axiosClient.delete(`/articles/commentaires/${id}`);
+      setCommentaires((liste) => liste.filter((c) => c._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Erreur lors de la suppression.');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onFermer}>
+      <div
+        className="bg-white rounded-xl shadow-xl p-6 w-full max-w-lg max-h-[80vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-display font-bold text-gray-800 line-clamp-1">
+            Commentaires — {article.titre}
+          </h3>
+          <button onClick={onFermer}>
+            <X size={18} className="text-gray-400" />
+          </button>
+        </div>
+        <div className="overflow-y-auto space-y-3">
+          {erreur && <p className="text-red-600 text-sm">{erreur}</p>}
+          {!commentaires && !erreur && <p className="text-gray-400 text-sm">Chargement...</p>}
+          {commentaires?.length === 0 && <p className="text-gray-400 text-sm">Aucun commentaire.</p>}
+          {commentaires?.map((c) => (
+            <div key={c._id} className="flex gap-3 items-start border-b border-gray-100 pb-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm">
+                  <span className="font-semibold text-gray-800">{c.auteur?.nom || 'Fidèle'}</span>{' '}
+                  <span className="text-xs text-gray-400">
+                    {new Date(c.createdAt).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">{c.texte}</p>
+              </div>
+              <button
+                onClick={() => supprimer(c._id)}
+                title="Supprimer"
+                className="text-red-500 hover:text-red-700 shrink-0"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

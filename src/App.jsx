@@ -20,6 +20,7 @@ import Groupes from './pages/villageadmin/Groupes';
 import Abonnes from './pages/villageadmin/Abonnes';
 import DonsDimes from './pages/villageadmin/DonsDimes';
 import Parametres from './pages/villageadmin/Parametres';
+import Evenements from './pages/villageadmin/Evenements';
 
 function App() {
   return (
@@ -102,6 +103,14 @@ function App() {
             element={
               <RouteProtegee roleRequis="villageadmin">
                 <DonsDimes />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/eglise/evenements"
+            element={
+              <RouteProtegee roleRequis="villageadmin">
+                <Evenements />
               </RouteProtegee>
             }
           />
