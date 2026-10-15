@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import { Radio } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
+import ChatDirectAdmin from '../../components/ChatDirectAdmin';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LiveVod() {
+  const { user } = useAuth();
   const [chargement, setChargement] = useState(true);
   const [lien, setLien] = useState('');
   const [lienEnregistre, setLienEnregistre] = useState('');
@@ -102,6 +105,9 @@ export default function LiveVod() {
             </p>
           </section>
         )}
+
+        {/* Chat des fidèles pendant le direct */}
+        {!chargement && enDirect && user?.village?._id && <ChatDirectAdmin villageId={user.village._id} />}
       </div>
     </MiseEnPageVillageAdmin>
   );
