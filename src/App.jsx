@@ -18,6 +18,8 @@ import DemandesPriere from './pages/villageadmin/DemandesPriere';
 import LiveVod from './pages/villageadmin/LiveVod';
 import Groupes from './pages/villageadmin/Groupes';
 import Abonnes from './pages/villageadmin/Abonnes';
+import DonsDimes from './pages/villageadmin/DonsDimes';
+import Parametres from './pages/villageadmin/Parametres';
 
 function App() {
   return (
@@ -92,6 +94,22 @@ function App() {
             element={
               <RouteProtegee roleRequis="villageadmin">
                 <Abonnes />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/eglise/dons-dimes"
+            element={
+              <RouteProtegee roleRequis="villageadmin">
+                <DonsDimes />
+              </RouteProtegee>
+            }
+          />
+          <Route
+            path="/eglise/parametres"
+            element={
+              <RouteProtegee roleRequis="villageadmin">
+                <Parametres />
               </RouteProtegee>
             }
           />

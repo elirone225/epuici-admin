@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Newspaper, MessagesSquare, CreditCard, Users, LogOut, KeyRound, Megaphone, HandHeart, Radio } from 'lucide-react';
+import { LayoutDashboard, Newspaper, MessagesSquare, CreditCard, Users, LogOut, KeyRound, Megaphone, HandHeart, Radio, Wallet, Settings } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ModalChangerMotDePasse from './ModalChangerMotDePasse';
 
@@ -12,6 +12,8 @@ export default function MiseEnPageVillageAdmin({ children }) {
   const abonnementActif =
     user?.abonnementExpireLe && new Date(user.abonnementExpireLe) > new Date();
 
+  const estTresorier = user?.fonction === 'tresorier';
+
   const liensMenu = [
     { chemin: '/eglise/tableau-de-bord', label: 'Tableau de bord', icone: LayoutDashboard },
     { chemin: '/eglise/actualites', label: 'Actualités', icone: Newspaper },
@@ -20,7 +22,10 @@ export default function MiseEnPageVillageAdmin({ children }) {
     { chemin: '/eglise/prieres', label: 'Demandes de prière', icone: HandHeart },
     { chemin: '/eglise/groupes', label: 'Groupes', icone: MessagesSquare },
     { chemin: '/eglise/abonnes', label: 'Abonnés', icone: Users },
+    // Les comptes de l'église ne sont visibles que par le trésorier
+    ...(estTresorier ? [{ chemin: '/eglise/dons-dimes', label: 'Dons & Dîmes', icone: Wallet }] : []),
     { chemin: '/eglise/abonnement', label: 'Abonnement', icone: CreditCard },
+    { chemin: '/eglise/parametres', label: 'Paramètres', icone: Settings },
   ];
 
   return (
@@ -68,7 +73,8 @@ export default function MiseEnPageVillageAdmin({ children }) {
         </nav>
 
         <div className="p-4 border-t border-white/10 space-y-2">
-          <p className="text-sm text-white/70 mb-2 truncate">{user?.nom}</p>
+          <p className="text-sm text-white/70 truncate">{user?.nom}</p>
+          <p className="text-xs text-white/50 mb-2">{estTresorier ? 'Trésorier' : 'Administrateur'}</p>
           <button
             onClick={() => setModalMotDePasseOuvert(true)}
             className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition"

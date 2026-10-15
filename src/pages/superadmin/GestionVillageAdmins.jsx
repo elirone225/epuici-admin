@@ -7,7 +7,8 @@ export default function GestionVillageAdmins() {
   const [villages, setVillages] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [modalOuvert, setModalOuvert] = useState(false);
-  const [villageAModifierAdmin, setVillageAModifierAdmin] = useState(null);
+  // { village, compte, role } du compte d'église en cours de modification
+  const [compteAModifier, setCompteAModifier] = useState(null);
   const [erreur, setErreur] = useState('');
 
   const chargerVillages = async () => {
@@ -28,7 +29,7 @@ export default function GestionVillageAdmins() {
 
   const supprimerVillage = async (village) => {
     const confirme = window.confirm(
-      `Supprimer l'église "${village.nom}" ?\n\nCela supprimera aussi son compte administrateur associé. Cette action est irréversible.`
+      `Supprimer l'église "${village.nom}" ?\n\nCela supprimera aussi ses comptes admin et trésorier. Cette action est irréversible.`
     );
     if (!confirme) return;
 
@@ -56,7 +57,7 @@ export default function GestionVillageAdmins() {
           <div>
             <h1 className="font-display text-2xl font-bold text-gray-800">Églises & Admins</h1>
             <p className="text-gray-500 text-sm mt-1">
-              Gère les églises adhérentes et leurs comptes administrateurs.
+              Gère les églises adhérentes et leurs deux comptes : l'admin et le trésorier.
             </p>
           </div>
           <button
@@ -77,7 +78,8 @@ export default function GestionVillageAdmins() {
                 <th className="px-6 py-3 font-medium">Église</th>
                 <th className="px-6 py-3 font-medium">Région</th>
                 <th className="px-6 py-3 font-medium">Admin</th>
-                <th className="px-6 py-3 font-medium">Téléphone</th>
+                <th className="px-6 py-3 font-medium">Trésorier</th>
+                <th className="px-6 py-3 font-medium">Numéro Wave</th>
                 <th className="px-6 py-3 font-medium">Abonnement</th>
                 <th className="px-6 py-3 font-medium"></th>
               </tr>
@@ -85,7 +87,7 @@ export default function GestionVillageAdmins() {
             <tbody className="divide-y divide-gray-100">
               {chargement && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                     Chargement...
                   </td>
                 </tr>
@@ -93,7 +95,7 @@ export default function GestionVillageAdmins() {
 
               {!chargement && villages.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
                     Aucune église pour le moment.
                   </td>
                 </tr>
@@ -105,13 +107,28 @@ export default function GestionVillageAdmins() {
                   <tr key={village._id}>
                     <td className="px-6 py-4 font-medium text-gray-800">{village.nom}</td>
                     <td className="px-6 py-4 text-gray-600">{village.region}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {village.admin ? village.admin.nom : (
-                        <span className="text-gray-400 italic">Aucun admin</span>
-                      )}
+                    <td className="px-6 py-4">
+                      <CelluleCompte
+                        village={village}
+                        role="admin"
+                        onModifier={setCompteAModifier}
+                        onSucces={chargerVillages}
+                      />
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {village.admin ? village.admin.telephone : '—'}
+                    <td className="px-6 py-4">
+                      <CelluleCompte
+                        village={village}
+                        role="tresorier"
+                        onModifier={setCompteAModifier}
+                        onSucces={chargerVillages}
+                      />
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 whitespace-nowrap">
+                      {village.numeroWave ? (
+                        village.numeroWave
+                      ) : (
+                        <span className="text-gray-400 italic">Non renseigné</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {statut ? (
@@ -124,17 +141,6 @@ export default function GestionVillageAdmins() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        {village.admin ? (
-                          <button
-                            onClick={() => setVillageAModifierAdmin(village)}
-                            title="Modifier l'admin"
-                            className="text-gray-400 hover:text-epuici-blue transition"
-                          >
-                            <Pencil size={16} />
-                          </button>
-                        ) : (
-                          <BoutonCreerAdmin village={village} onSucces={chargerVillages} />
-                        )}
                         <button
                           onClick={() => supprimerVillage(village)}
                           title="Supprimer l'église"
@@ -162,12 +168,12 @@ export default function GestionVillageAdmins() {
         />
       )}
 
-      {villageAModifierAdmin && (
+      {compteAModifier && (
         <ModalModifierAdmin
-          village={villageAModifierAdmin}
-          onFermer={() => setVillageAModifierAdmin(null)}
+          {...compteAModifier}
+          onFermer={() => setCompteAModifier(null)}
           onSucces={() => {
-            setVillageAModifierAdmin(null);
+            setCompteAModifier(null);
             chargerVillages();
           }}
         />
@@ -176,8 +182,31 @@ export default function GestionVillageAdmins() {
   );
 }
 
-// Bouton + petit formulaire inline pour créer l'admin d'un village existant sans admin
-function BoutonCreerAdmin({ village, onSucces }) {
+// Compte admin ou trésorier d'une église : nom + téléphone et bouton de
+// modification, ou bouton de création s'il n'existe pas encore
+function CelluleCompte({ village, role, onModifier, onSucces }) {
+  const compte = role === 'tresorier' ? village.tresorier : village.admin;
+  if (!compte) return <BoutonCreerAdmin village={village} role={role} onSucces={onSucces} />;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="min-w-0">
+        <p className="text-gray-800 truncate">{compte.nom}</p>
+        <p className="text-xs text-gray-400">{compte.telephone}</p>
+      </div>
+      <button
+        onClick={() => onModifier({ village, compte, role })}
+        title={role === 'tresorier' ? 'Modifier le trésorier' : "Modifier l'admin"}
+        className="text-gray-400 hover:text-epuici-blue transition"
+      >
+        <Pencil size={15} />
+      </button>
+    </div>
+  );
+}
+
+// Bouton + petit formulaire pour créer le compte admin ou trésorier d'une église
+function BoutonCreerAdmin({ village, role = 'admin', onSucces }) {
+  const libelle = role === 'tresorier' ? 'trésorier' : 'admin';
   const [ouvert, setOuvert] = useState(false);
   const [nom, setNom] = useState('');
   const [telephone, setTelephone] = useState('');
@@ -196,6 +225,7 @@ function BoutonCreerAdmin({ village, onSucces }) {
         email,
         motDePasse,
         villageId: village._id,
+        role,
       });
       onSucces();
     } catch (err) {
@@ -211,7 +241,7 @@ function BoutonCreerAdmin({ village, onSucces }) {
         onClick={() => setOuvert(true)}
         className="text-epuici-blue text-sm font-medium hover:underline"
       >
-        + Ajouter admin
+        + Ajouter {libelle}
       </button>
     );
   }
@@ -220,7 +250,9 @@ function BoutonCreerAdmin({ village, onSucces }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-display font-bold text-gray-800">Admin pour {village.nom}</h3>
+          <h3 className="font-display font-bold text-gray-800">
+            {role === 'tresorier' ? 'Trésorier' : 'Admin'} pour {village.nom}
+          </h3>
           <button onClick={() => setOuvert(false)}>
             <X size={18} className="text-gray-400" />
           </button>
@@ -266,9 +298,9 @@ function BoutonCreerAdmin({ village, onSucces }) {
   );
 }
 
-// Modal de modification d'un admin de village existant (identifiant, mot de passe, statut)
-function ModalModifierAdmin({ village, onFermer, onSucces }) {
-  const admin = village.admin;
+// Modal de modification d'un compte d'église (admin ou trésorier) :
+// identifiant, mot de passe, statut
+function ModalModifierAdmin({ village, compte: admin, role, onFermer, onSucces }) {
   const [nom, setNom] = useState(admin.nom || '');
   const [telephone, setTelephone] = useState(admin.telephone || '');
   const [email, setEmail] = useState(admin.email || '');
@@ -297,7 +329,9 @@ function ModalModifierAdmin({ village, onFermer, onSucces }) {
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-display font-bold text-gray-800">Admin de {village.nom}</h3>
+          <h3 className="font-display font-bold text-gray-800">
+            {role === 'tresorier' ? 'Trésorier' : 'Admin'} de {village.nom}
+          </h3>
           <button onClick={onFermer}>
             <X size={18} className="text-gray-400" />
           </button>
