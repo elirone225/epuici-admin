@@ -4,6 +4,19 @@ import axiosClient from '../../api/axiosClient';
 import { useAuth } from '../../context/AuthContext';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
 
+// Catégories proposées dans l'onglet « Découvrir » de l'application
+const CATEGORIES_GROUPE = [
+  { valeur: 'ministere', label: 'Ministère' },
+  { valeur: 'jeunesse', label: 'Jeunesse' },
+  { valeur: 'quartier', label: 'Quartier' },
+  { valeur: 'priere', label: 'Prière' },
+  { valeur: 'louange', label: 'Louange & chorale' },
+  { valeur: 'famille', label: 'Famille & couples' },
+  { valeur: 'autre', label: 'Autre' },
+];
+const libelleCategorie = (valeur) =>
+  CATEGORIES_GROUPE.find((c) => c.valeur === valeur)?.label || 'Autre';
+
 export default function Groupes() {
   const { user } = useAuth();
   const [groupes, setGroupes] = useState([]);
@@ -82,7 +95,10 @@ export default function Groupes() {
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col"
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-gray-800">{groupe.nom}</h3>
+                <div>
+                  <h3 className="font-semibold text-gray-800">{groupe.nom}</h3>
+                  <span className="text-xs text-epuici-blue font-medium">{libelleCategorie(groupe.categorie)}</span>
+                </div>
                 {groupe.nbDemandesEnAttente > 0 && (
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-epuici-accent/10 text-epuici-accent whitespace-nowrap">
                     {groupe.nbDemandesEnAttente} demande{groupe.nbDemandesEnAttente > 1 ? 's' : ''}
@@ -149,6 +165,7 @@ function ModalGroupe({ groupe, onFermer, onSucces }) {
   const modification = Boolean(groupe._id);
   const [nom, setNom] = useState(groupe.nom || '');
   const [description, setDescription] = useState(groupe.description || '');
+  const [categorie, setCategorie] = useState(groupe.categorie || 'autre');
   const [responsables, setResponsables] = useState(
     new Set((groupe.responsables || []).map((r) => r._id))
   );
@@ -189,7 +206,7 @@ function ModalGroupe({ groupe, onFermer, onSucces }) {
     setEnvoi(true);
     setErreur('');
     try {
-      const donnees = { nom, description, responsables: [...responsables] };
+      const donnees = { nom, description, categorie, responsables: [...responsables] };
       if (modification) {
         await axiosClient.put(`/groupes/${groupe._id}`, donnees);
       } else {
@@ -222,6 +239,17 @@ function ModalGroupe({ groupe, onFermer, onSucces }) {
             placeholder="Nom du groupe (ex : Chorale, Jeunesse, Femmes...)"
             className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-epuici-blue/30"
           />
+          <select
+            value={categorie}
+            onChange={(e) => setCategorie(e.target.value)}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white"
+          >
+            {CATEGORIES_GROUPE.map((c) => (
+              <option key={c.valeur} value={c.valeur}>
+                Catégorie : {c.label}
+              </option>
+            ))}
+          </select>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
