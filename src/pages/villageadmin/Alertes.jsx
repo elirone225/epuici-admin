@@ -1,7 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, RotateCcw, Trash2, ShieldOff, ShieldCheck } from 'lucide-react';
+import { Trash2, ShieldOff, ShieldCheck, MessageSquareReply } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import MiseEnPageVillageAdmin from '../../components/MiseEnPageVillageAdmin';
+
+// Type d'alerte choisi par le fidèle
+const TYPES = {
+  deces: { libelle: 'Décès', classe: 'bg-gray-800 text-white' },
+  maladie: { libelle: 'Maladie', classe: 'bg-orange-100 text-orange-700' },
+  urgence: { libelle: 'Urgence', classe: 'bg-red-600 text-white' },
+  autre: { libelle: 'Autre', classe: 'bg-gray-100 text-gray-600' },
+};
+
+// Suivi visible par le fidèle dans l'application
+const STATUTS = {
+  nouvelle: { libelle: 'Reçue', classe: 'bg-epuici-accent/15 text-epuici-accent' },
+  en_cours: { libelle: 'Prise en charge', classe: 'bg-blue-100 text-epuici-blue' },
+  traitee: { libelle: 'Traitée', classe: 'bg-green-100 text-green-700' },
+};
 
 export default function Alertes() {
   const [alertes, setAlertes] = useState([]);
@@ -25,13 +40,26 @@ export default function Alertes() {
     charger();
   }, []);
 
-  const changerStatut = async (id) => {
+  // Change le statut suivi par le fidèle (et, si fourni, son message)
+  const changerStatut = async (id, statut, reponse) => {
     try {
-      const { data } = await axiosClient.put(`/alertes/${id}/statut`);
+      const { data } = await axiosClient.put(`/alertes/${id}/statut`, {
+        statut,
+        ...(reponse !== undefined ? { reponse } : {}),
+      });
       setAlertes((precedent) => precedent.map((a) => (a._id === id ? data : a)));
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur lors de la mise à jour.');
     }
+  };
+
+  const repondre = (alerte) => {
+    const message = prompt(
+      'Message au fidèle (visible dans son suivi d\'alerte) :',
+      alerte.reponse || ''
+    );
+    if (message === null) return;
+    changerStatut(alerte._id, alerte.statut, message);
   };
 
   const basculerSelection = (id) => {
@@ -200,14 +228,11 @@ export default function Alertes() {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        alerte.statut === 'traitee'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-epuici-accent/15 text-epuici-accent'
-                      }`}
-                    >
-                      {alerte.statut === 'traitee' ? 'Traitée' : 'Nouvelle'}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${(TYPES[alerte.type] || TYPES.autre).classe}`}>
+                      {(TYPES[alerte.type] || TYPES.autre).libelle}
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${(STATUTS[alerte.statut] || STATUTS.nouvelle).classe}`}>
+                      {(STATUTS[alerte.statut] || STATUTS.nouvelle).libelle}
                     </span>
                     {utilisateurBloque && (
                       <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">
@@ -219,6 +244,11 @@ export default function Alertes() {
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 whitespace-pre-wrap">{alerte.description}</p>
+                  {alerte.reponse && (
+                    <p className="text-xs text-epuici-blue bg-blue-50 rounded-lg px-2 py-1 mt-2 whitespace-pre-wrap">
+                      Votre réponse : {alerte.reponse}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400 mt-2">
                     Signalé par {alerte.utilisateur?.nom || 'Fidèle'}
                     {alerte.utilisateur?.telephone ? ` — ${alerte.utilisateur.telephone}` : ''}
@@ -226,23 +256,24 @@ export default function Alertes() {
                 </div>
 
                 <div className="flex flex-col gap-2 shrink-0">
-                  <button
-                    onClick={() => changerStatut(alerte._id)}
-                    className={`flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg h-fit ${
-                      alerte.statut === 'traitee'
-                        ? 'text-gray-500 hover:bg-gray-100'
-                        : 'text-white bg-epuici-blue hover:opacity-90'
-                    }`}
+                  <select
+                    value={alerte.statut}
+                    onChange={(e) => changerStatut(alerte._id, e.target.value)}
+                    className="text-xs font-medium px-2 py-2 rounded-lg border border-gray-200 bg-white"
+                    title="Statut visible par le fidèle"
                   >
-                    {alerte.statut === 'traitee' ? (
-                      <>
-                        <RotateCcw size={14} /> Rouvrir
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={14} /> Marquer traitée
-                      </>
-                    )}
+                    {Object.entries(STATUTS).map(([code, st]) => (
+                      <option key={code} value={code}>
+                        {st.libelle}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => repondre(alerte)}
+                    className="flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg h-fit text-epuici-blue hover:bg-blue-50"
+                  >
+                    <MessageSquareReply size={14} /> Répondre
                   </button>
 
                   <button
